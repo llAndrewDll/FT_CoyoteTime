@@ -60,6 +60,12 @@ void ACoyoteTimeCharacter::BeginPlay()
 	Super::BeginPlay();
 }
 
+void aCoyoteTimeCharacter::Tick()
+{
+	Super::Tick();
+	UpdateCoyoteTime();
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -126,5 +132,49 @@ void ACoyoteTimeCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+
+	void ACoyoteTimeCharacter::CoyoteJump()
+	{
+		if (GetCharacterMovement()->IsMovingOnGround() || bCanUseCoyoteTime)
+		{
+			//reset coyote time
+			bCanUseCoyoteTime = false;
+			TimeSinceLeftGround = 0.0f
+		}
+
+		//perform the jump
+		LaunchCharacter(FVector(0.0f, 0, 0f, GetCharacterMovement()->JumpZVelocity), false, true);
+	}
+	void ACoyotimeCharacter::Landed(const FHitResult& Hit)
+	{
+		Super::Landed(Hit);
+
+		//Reset coyote time variables
+		TimeSinceLeftGround = 0.0f;
+		bCanUseCoyoteTime = false;
+	}
+
+	void ACoyoteTimeCharacter::UpdateCoyoteTime(float DeltaTime)
+	{
+		
+		if (!GetCharacterMovement()->IsMovingOnGround())
+		{
+			TimeSinceLeftGround += DeltaTime;
+			if (TimeSinceLeftGround <= CoyoteTimeDuration)
+			{
+				bCanUseCoyoteTime = true;
+			}
+			else
+			{
+				bCanUseCoyoteTime = false;
+			}
+		}
+		else
+		{
+			//Player is on the ground, reset variables
+			TimeSinceLeftGround = 0.0f;
+			bCanUseCoyoteTime = false;
+		}
 	}
 }
